@@ -7,10 +7,12 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
 
     runs-on: ubuntu-latest
+
+    env:
+      IMAGE_TAG: ${{ github.run_number }}
 
     steps:
     - uses: actions/checkout@v4
@@ -20,11 +22,10 @@ jobs:
 
     - name: Build the Docker image
       run: |
-        docker build . --file Dockerfile --tag sharara99/spring:$(date +%s)
+        docker build . --file Dockerfile --tag sharara99/spring:${IMAGE_TAG}
 
     - name: Push the Docker image
       run: |
-        IMAGE_TAG=$(date +%s)
-        docker tag sharara99/spring:$IMAGE_TAG sharara99/spring:latest
-        docker push sharara99/spring:$IMAGE_TAG
+        docker tag sharara99/spring:${IMAGE_TAG} sharara99/spring:latest
+        docker push sharara99/spring:${IMAGE_TAG}
         docker push sharara99/spring:latest
