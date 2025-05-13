@@ -1,4 +1,4 @@
-/name: Docker Image CI
+name: Docker Image CI
 
 on:
   push:
@@ -14,5 +14,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag sharara99/spring:$(date +%s)
+      run: |
+        docker build . --file Dockerfile --tag sharara99/spring:$(date +%s)
+
+    - name: Push the Docker image
+      run: |
+        IMAGE_TAG=$(date +%s)
+        docker tag sharara99/spring:$IMAGE_TAG sharara99/spring:latest
+        docker push sharara99/spring:$IMAGE_TAG
+        docker push sharara99/spring:latest
