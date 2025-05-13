@@ -1,22 +1,24 @@
-# Stage 1: Build with Maven
+# ---------- Stage 1: Build with Maven ----------
 FROM maven:3.9.6-eclipse-temurin-17 AS builder
 
 WORKDIR /app
 
-# Copy pom and download dependencies (to use Docker cache)
+# Copy only pom.xml and download dependencies
 COPY pom.xml .
-RUN mvn dependency:go-offline
+RUN mvn dependency:go-offline -B --no-transfer-progress
 
-# Copy entire project and build the jar
+# Copy the rest of the source code
 COPY . .
-RUN mvn clean package -DskipTests
 
-# Stage 2: Run the application
-FROM eclipse-temurin:17-jdk-alpine
+# Build the application
+RUN mvn clean verify -DskipTests -B
+
+# ---------- Stage 2: Runtime Image ----------
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
-# Copy the jar file from the builder stage
+# Copy the jar from the builder stage
 COPY --from=builder /app/target/spring-petclinic-*.jar app.jar
 
 # Expose port
